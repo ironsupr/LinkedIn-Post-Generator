@@ -1,0 +1,154 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+data/*.sqlite
+
+# Drafts (optional - uncomment if you don't want to track drafts)
+# drafts/*.txt
+# drafts/*.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+coverage.xml
+*.cover
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Windows
+$RECYCLE.BIN/
+
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# Custom project-specific
+# Add any custom files/folders you want to ignore
+api_test_results/
+experiments/
+scratch/
+
+# ========================================
+# Development & Planning Documentation
+# (Keep locally but exclude from git)
+# ========================================
+
+# Build & Planning Phase Documents
+CHECKLIST.md
+DESIGN_DOCUMENTATION.md
+FLOWCHARTS_AND_DIAGRAMS.md
+IMPLEMENTATION_ROADMAP.md
+PROGRESS_REPORT.md
+PROJECT_COMPLETE.md
+PROJECT_SUMMARY.md
+TEST_RESULTS.md
+VISUAL_OVERVIEW.md
+
+# Test Scripts
+test_aggregation.py
+test_*.py
+
+# Environment Templates
+.env.example
+
+# Empty directories (created on demand)
+tests/
+config/
+drafts/
