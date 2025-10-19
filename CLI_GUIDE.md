@@ -160,6 +160,34 @@ python main.py review --id 1 --save
 
 ---
 
+### `export` - Save Post to File ⭐ NEW
+Exports a post to text or markdown file.
+
+```powershell
+python main.py export --id 5 --format md
+python main.py export --id 5 --format txt
+python main.py export --id 5 --format both
+python main.py export --id 5 --format md --filename my_post
+```
+
+**Options:**
+- `--id` - Post ID (required)
+- `--format` - Export format: txt, md, or both (default: md)
+- `--filename` - Custom filename without extension
+
+**Use Cases:**
+- 💾 Backup your posts
+- ✏️ Edit offline before posting
+- 📤 Share drafts with team
+- 📚 Build content portfolio
+- 🔄 Version control with git
+
+Files are saved to the `drafts/` directory.
+
+See [EXPORT_GUIDE.md](EXPORT_GUIDE.md) for complete documentation.
+
+---
+
 ### `mark-posted` - Track Published Posts
 Marks a draft as posted to LinkedIn.
 

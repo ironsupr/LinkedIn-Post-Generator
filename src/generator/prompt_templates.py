@@ -23,42 +23,81 @@ class PromptTemplates:
         summary = content_item.get('summary', '')
         url = content_item.get('url', '')
         category = content_item.get('category', 'Tech')
+        source = content_item.get('source', '')
         
-        prompt = f"""You are a professional LinkedIn content creator specializing in {category} topics.
+        # Customize prompt based on source quality
+        is_research = (source == 'ArXiv')
+        content_type = "research paper" if is_research else "article"
+        
+        prompt = f"""You are a thought leader on LinkedIn with expertise in {category}. You translate complex technical content into valuable insights for professionals.
 
-Create an engaging LinkedIn post about this recent development:
-
+SOURCE CONTENT ({source}):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TITLE: {title}
+
 SUMMARY: {summary}
+
 URL: {url}
-CATEGORY: {category}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-REQUIREMENTS:
-1. Start with a strong hook (question, surprising stat, or bold statement)
-2. Keep it concise (150-250 words)
-3. Use line breaks every 2-3 sentences for readability
-4. Include 2-3 relevant emojis (strategic placement, not excessive)
-5. Explain why this matters to professionals in {category}
-6. End with an engaging question to drive comments
-7. Add 3-5 relevant hashtags at the end
-8. Professional yet conversational tone
-9. NO promotional language
-10. Focus on value and insights
+YOUR MISSION:
+Create a LinkedIn post that demonstrates deep understanding and provides unique value. {"This is academic research - translate complex findings into practical, actionable insights." if is_research else "Go beyond surface-level summary - provide analysis and implications."}
 
-STRUCTURE:
-[Hook - First 1-2 lines that grab attention]
+✨ CRITICAL QUALITY STANDARDS:
 
-[Context - What happened/what is it]
+1. SUBSTANCE OVER FLUFF
+   {"- Extract the key breakthrough or finding from the research" if is_research else "- Identify what's genuinely new or significant"}
+   - Explain the "so what?" - real-world implications
+   - Include specific details or data points (not just generalizations)
+   - Avoid buzzwords like "game-changing" unless truly warranted
 
-[Analysis - Why it matters]
+2. DEMONSTRATE EXPERTISE
+   {"- Translate academic language into accessible insights" if is_research else "- Add your perspective or analysis"}
+   - Connect to broader trends or challenges in the field
+   - Mention related concepts or context that shows depth
+   - Be specific about WHO this matters to and WHY
 
-[Key takeaways or implications]
+3. PROFESSIONAL WRITING STYLE
+   - Hook: Start with a surprising insight, question, or bold (but accurate) statement
+   - NO generic openings like "In today's digital world..."
+   - Use concrete examples over abstract statements
+   - Short paragraphs (2-3 sentences) with breathing room
+   - Natural, conversational tone (like explaining to a smart colleague)
 
-[Call-to-action question]
+4. CREDIBILITY & ATTRIBUTION
+   - Credit the source naturally within the post
+   - {"Acknowledge it's research (adds authority)" if is_research else "Reference the publication or author if notable"}
+   - Include URL at the end for those who want to dive deeper
 
-[Hashtags]
+5. ENGAGEMENT WITHOUT CLICKBAIT
+   - End with a thought-provoking question (not obvious yes/no)
+   - Ask about experiences, predictions, or opinions
+   - Make readers want to share their perspective
 
-Write the complete LinkedIn post now:"""
+📏 FORMAT (250-350 words):
+
+[HOOK - 1-2 lines that stop the scroll]
+
+[CONTEXT - What this is about + why you're writing about it]
+
+[KEY INSIGHT #1 - First major takeaway with specific detail]
+
+[KEY INSIGHT #2 - Second important point or implication]
+
+[ANALYSIS - The "so what?" - practical implications or future outlook]
+
+[CALL TO ACTION - Engaging question that invites genuine discussion]
+
+[3-5 hashtags - mix of broad and niche, relevant to {category}]
+
+🚫 AVOID:
+- Generic statements that could apply to any {content_type}
+- Listing features without explaining impact
+- Overused phrases: "revolutionize", "game-changer" (unless truly applicable)
+- Pure summary without your insights
+- Excessive emojis (use 2-3 maximum, strategically)
+
+Write a LinkedIn post that professionals will SAVE and SHARE:"""
         
         return prompt
     

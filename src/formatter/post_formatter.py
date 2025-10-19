@@ -212,11 +212,18 @@ class PostFormatter:
             filename = f"drafts/post_{post_id}_{post_type}_{timestamp}.md"
         
         # Build markdown content
+        created_date = post_data.get('created_date', datetime.now())
+        # Handle both datetime objects and strings
+        if isinstance(created_date, str):
+            created_str = created_date
+        else:
+            created_str = created_date.strftime('%Y-%m-%d %H:%M:%S')
+        
         md_content = f"""# LinkedIn Post Draft
 
 **Post ID:** {post_data.get('id', 'N/A')}  
 **Type:** {post_data.get('type', 'N/A')}  
-**Created:** {post_data.get('created_date', datetime.now()).strftime('%Y-%m-%d %H:%M:%S')}  
+**Created:** {created_str}  
 **Status:** Draft
 
 """

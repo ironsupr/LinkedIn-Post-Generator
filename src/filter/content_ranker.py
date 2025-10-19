@@ -13,9 +13,18 @@ class ContentRanker:
     def __init__(self):
         """Initialize ranker with scoring weights."""
         self.weights = {
-            'recency': 0.4,      # 40% weight for how recent
-            'engagement': 0.3,   # 30% weight for engagement metrics
-            'relevance': 0.3     # 30% weight for topic relevance
+            'recency': 0.25,     # 25% weight for how recent
+            'engagement': 0.20,  # 20% weight for engagement metrics
+            'relevance': 0.30,   # 30% weight for topic relevance
+            'source_quality': 0.25  # 25% weight for source quality
+        }
+        
+        # Source quality ratings (higher = more professional/reliable)
+        self.source_quality_scores = {
+            'ArXiv': 100,        # Research papers - highest quality
+            'HackerNews': 80,    # Tech news - high quality
+            'Dev.to': 70,        # Technical articles - good quality
+            'Reddit': 50         # Community discussions - variable quality
         }
         
         # Keywords for relevance scoring
@@ -133,6 +142,19 @@ class ContentRanker:
         
         return min(100, score)
     
+    def calculate_source_quality_score(self, source: str) -> float:
+        """
+        Calculate source quality score (0-100).
+        Research papers and professional sources score higher.
+        
+        Args:
+            source: Source name
+            
+        Returns:
+            Score from 0-100
+        """
+        return self.source_quality_scores.get(source, 50)
+    
     def calculate_total_score(self, content_item: Dict) -> float:
         """
         Calculate total weighted score for a content item.
@@ -150,11 +172,15 @@ class ContentRanker:
             content_item.get('engagement_score', 0)
         )
         relevance_score = self.calculate_relevance_score(content_item)
+        source_quality_score = self.calculate_source_quality_score(
+            content_item.get('source', '')
+        )
         
         total_score = (
             recency_score * self.weights['recency'] +
             engagement_score * self.weights['engagement'] +
-            relevance_score * self.weights['relevance']
+            relevance_score * self.weights['relevance'] +
+            source_quality_score * self.weights['source_quality']
         )
         
         return round(total_score, 2)

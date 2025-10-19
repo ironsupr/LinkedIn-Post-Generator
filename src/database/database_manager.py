@@ -96,6 +96,15 @@ class ContentDatabase(BaseDB):
         """, (post_id,))
         row = self.cursor.fetchone()
         return dict(row) if row else None
+    
+    def get_content_by_id(self, content_id: int) -> Optional[Dict]:
+        """Get a specific content item by ID."""
+        self.cursor.execute("""
+            SELECT * FROM content_items 
+            WHERE id = ?
+        """, (content_id,))
+        row = self.cursor.fetchone()
+        return dict(row) if row else None
         
     def mark_post_posted(self, post_id: int, engagement: Optional[int] = None):
         """Mark a post as posted."""

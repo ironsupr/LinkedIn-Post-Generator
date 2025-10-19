@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from src.generator.gemini_client import GeminiClient
 from src.generator.prompt_templates import PromptTemplates
 from src.filter.content_ranker import ContentRanker
+from src.filter.quality_filter import QualityFilter
 from src.database.database_manager import ContentDatabase
 
 
@@ -24,6 +25,7 @@ class PostGenerator:
         self.db = ContentDatabase(db_path)
         self.gemini_client = GeminiClient()
         self.ranker = ContentRanker()
+        self.quality_filter = QualityFilter()
         self.templates = PromptTemplates()
         
     def generate_news_post(self, category: Optional[str] = None, days_back: int = 7) -> Optional[Dict]:
@@ -55,28 +57,63 @@ class PostGenerator:
             
             print(f"   ✓ Found {len(content_items)} items")
             
+            # Apply quality filter
+            print(f"\n2. Applying quality filters...")
+            filtered_items = self.quality_filter.filter_content(content_items, verbose=False)
+            
+            if not filtered_items:
+                print("   ✗ No high-quality content passed filters")
+                return None
+            
+            print(f"   ✓ {len(filtered_items)} items passed quality checks ({len(content_items) - len(filtered_items)} filtered out)")
+            
+            # Show source breakdown
+            source_counts = {}
+            for item in filtered_items:
+                source = item['source']
+                source_counts[source] = source_counts.get(source, 0) + 1
+            print(f"   Sources: {', '.join([f'{k}({v})' for k, v in sorted(source_counts.items())])}")
+            
             # Rank content
-            print("\n2. Ranking content by score...")
-            top_items = self.ranker.get_top_items(content_items, n=5)
+            print("\n3. Ranking content by score (prioritizing quality sources)...")
+            top_items = self.ranker.get_top_items(filtered_items, n=10)
             
-            print(f"   ✓ Top {len(top_items)} items selected")
+            print(f"   ✓ Top {len(top_items)} items ranked")
+            
+            # Show source distribution
+            source_counts = {}
+            for item in top_items[:5]:
+                source = item['source']
+                source_counts[source] = source_counts.get(source, 0) + 1
+            
+            print(f"   Top 5 sources: {', '.join([f'{k}({v})' for k, v in source_counts.items()])}")
+            
+            # Prefer ArXiv (research papers) if available in top 5
+            arxiv_items = [item for item in top_items[:5] if item['source'] == 'ArXiv']
+            if arxiv_items:
+                best_item = arxiv_items[0]
+                print(f"   ✓ Prioritizing ArXiv research paper (highest quality)")
+            else:
+                best_item = top_items[0]
+                print(f"   ✓ Using top-ranked item")
+            
+            # Display top 3 for reference
+            print(f"\n   Top 3 candidates:")
             for i, item in enumerate(top_items[:3], 1):
-                print(f"      {i}. {item['title'][:60]}... (Score: {item['calculated_score']:.2f})")
+                print(f"      {i}. [{item['source']}] {item['title'][:50]}... (Score: {item['calculated_score']:.2f})")
             
-            # Select best item
-            best_item = top_items[0]
-            print(f"\n3. Selected top item: {best_item['title'][:60]}...")
-            print(f"   Source: {best_item['source']}")
+            print(f"\n4. Selected: {best_item['title'][:60]}...")
+            print(f"   Source: {best_item['source']} (Quality Score: {self.ranker.calculate_source_quality_score(best_item['source'])}/100)")
             print(f"   Category: {best_item['category']}")
-            print(f"   Score: {best_item['calculated_score']:.2f}")
+            print(f"   Overall Score: {best_item['calculated_score']:.2f}")
             
             # Generate prompt
-            print("\n4. Generating AI prompt...")
+            print("\n5. Generating AI prompt...")
             prompt = self.templates.news_post_prompt(best_item)
             print("   ✓ Prompt created")
             
             # Generate post
-            print("\n5. Generating post with Gemini AI...")
+            print("\n6. Generating post with Gemini AI...")
             post_content = self.gemini_client.generate_with_retry(prompt)
             
             if not post_content:
@@ -86,7 +123,7 @@ class PostGenerator:
             print("   ✓ Post generated successfully")
             
             # Save to database
-            print("\n6. Saving to database...")
+            print("\n7. Saving to database...")
             post_data = {
                 'content': post_content,
                 'post_type': 'news',

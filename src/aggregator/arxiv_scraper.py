@@ -19,9 +19,9 @@ class ArxivScraper(BaseScraper):
         self.rate_limit_delay = 3  # ArXiv requires 3 seconds between requests
         
     def fetch_content(self, 
-                     query: str = 'AI OR ML OR "machine learning" OR "deep learning"',
-                     max_results: int = 50,
-                     days_back: int = 7) -> List[Dict]:
+                     query: str = 'AI OR ML OR "machine learning" OR "deep learning" OR "neural network" OR LLM OR "large language model" OR GPT OR "computer vision" OR NLP',
+                     max_results: int = 100,
+                     days_back: int = 14) -> List[Dict]:
         """
         Fetch recent papers from ArXiv.
         
@@ -82,10 +82,10 @@ class ArxivScraper(BaseScraper):
                     raw_item = {
                         'title': title,
                         'url': url,
-                        'summary': summary[:500],  # Limit summary length
+                        'summary': summary[:700],  # More detailed summary for research
                         'category': self._categorize_paper(title, summary, category_text),
                         'published_date': pub_date,
-                        'engagement_score': 50  # Base score for research papers
+                        'engagement_score': 75  # Higher base score for research papers (more valuable)
                     }
                     
                     items.append(self.normalize_item(raw_item))
@@ -102,13 +102,15 @@ class ArxivScraper(BaseScraper):
         """Categorize paper based on content."""
         content = (title + ' ' + summary).lower()
         
-        # Check for keywords
-        if any(word in content for word in ['devops', 'kubernetes', 'docker', 'ci/cd']):
+        # More comprehensive keyword categorization
+        if any(word in content for word in ['devops', 'kubernetes', 'docker', 'ci/cd', 'continuous integration', 'deployment', 'infrastructure']):
             return 'DevOps'
-        elif any(word in content for word in ['cloud', 'aws', 'azure', 'gcp']):
+        elif any(word in content for word in ['cloud computing', 'aws', 'azure', 'gcp', 'distributed system', 'serverless', 'microservice']):
             return 'Cloud'
-        elif any(word in content for word in ['data science', 'analytics', 'visualization']):
+        elif any(word in content for word in ['data science', 'analytics', 'visualization', 'statistical', 'data mining', 'big data']):
             return 'DataScience'
+        elif any(word in content for word in ['machine learning', 'deep learning', 'neural network', 'ai', 'artificial intelligence', 'llm', 'gpt', 'computer vision', 'nlp', 'natural language', 'reinforcement learning']):
+            return 'AI'
         else:
             return 'AI'  # Default for most ArXiv papers
 

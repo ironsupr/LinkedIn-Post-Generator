@@ -339,6 +339,101 @@ def preview_content(days, limit, category):
 
 
 @cli.command()
+@click.option('--id', 'post_id', required=True, type=int, help='Post ID to export')
+@click.option('--format', 'file_format', type=click.Choice(['txt', 'md', 'both']), default='md',
+              help='Export format (txt, md, or both)')
+@click.option('--filename', help='Custom filename (without extension)')
+def export(post_id, file_format, filename):
+    """
+    Export a post to text or markdown file.
+    
+    Saves the post content to a file in the drafts/ directory.
+    Useful for backing up posts or editing offline.
+    """
+    try:
+        db = ContentDatabase()
+        db.connect()
+        post = db.get_post_by_id(post_id)
+        db.close()
+        
+        if not post:
+            click.echo(click.style(f'\n✗ Post #{post_id} not found', fg='red'))
+            sys.exit(1)
+        
+        # Prepare post data
+        post_data = {
+            'id': post['id'],
+            'content': post['content'],
+            'type': post['post_type'],
+            'created_date': post['created_date']
+        }
+        
+        # Add source info if available (fetch from content_items)
+        if post.get('source_content_id'):
+            db.connect()
+            source_content = db.get_content_by_id(post['source_content_id'])
+            db.close()
+            if source_content:
+                post_data['source_title'] = source_content['title']
+                post_data['source_url'] = source_content['url']
+                post_data['source_category'] = source_content['category']
+        
+        click.echo(click.style('\n' + '='*70, fg='cyan'))
+        click.echo(click.style(f'EXPORTING POST #{post_id}', fg='cyan', bold=True))
+        click.echo(click.style('='*70 + '\n', fg='cyan'))
+        
+        saved_files = []
+        
+        # Export as markdown
+        if file_format in ['md', 'both']:
+            if filename:
+                md_filename = f"drafts/{filename}.md"
+            else:
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                md_filename = f"drafts/post_{post_id}_{post['post_type']}_{timestamp}.md"
+            
+            md_path = PostFormatter.save_to_markdown(post_data, md_filename)
+            saved_files.append(('Markdown', md_path))
+        
+        # Export as text
+        if file_format in ['txt', 'both']:
+            if filename:
+                txt_filename = f"drafts/{filename}.txt"
+            else:
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                txt_filename = f"drafts/post_{post_id}_{post['post_type']}_{timestamp}.txt"
+            
+            # Create simple text file
+            import os
+            os.makedirs('drafts', exist_ok=True)
+            with open(txt_filename, 'w', encoding='utf-8') as f:
+                f.write(f"LinkedIn Post #{post_id}\n")
+                f.write(f"Type: {post['post_type']}\n")
+                f.write(f"Created: {post['created_date']}\n")
+                f.write(f"\n{'-' * 70}\n\n")
+                f.write(post['content'])
+            
+            saved_files.append(('Text', txt_filename))
+        
+        # Show results
+        for format_name, filepath in saved_files:
+            click.echo(click.style(f'✓ {format_name} file saved:', fg='green'))
+            click.echo(f'  {filepath}')
+        
+        click.echo(click.style('\n' + '='*70, fg='green'))
+        click.echo(click.style('Export complete!', fg='green', bold=True))
+        click.echo(click.style('='*70 + '\n', fg='green'))
+        
+    except Exception as e:
+        click.echo(click.style(f'\n✗ Error: {str(e)}', fg='red'))
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+
+
+@cli.command()
 def workflow():
     """
     Display the recommended posting workflow.
@@ -361,10 +456,14 @@ def workflow():
     click.echo('  $ python main.py review --id 1')
     click.echo('  Check the generated post\n')
     
-    click.echo(click.style('Step 4: Post to LinkedIn', fg='yellow', bold=True))
+    click.echo(click.style('Step 4: Export (Optional)', fg='yellow', bold=True))
+    click.echo('  $ python main.py export --id 1 --format md')
+    click.echo('  Save as text/markdown file for editing or backup\n')
+    
+    click.echo(click.style('Step 5: Post to LinkedIn', fg='yellow', bold=True))
     click.echo('  Copy the post content and publish on LinkedIn\n')
     
-    click.echo(click.style('Step 5: Mark as Posted', fg='yellow', bold=True))
+    click.echo(click.style('Step 6: Mark as Posted', fg='yellow', bold=True))
     click.echo('  $ python main.py mark-posted --id 1')
     click.echo('  Track your posting activity\n')
     
